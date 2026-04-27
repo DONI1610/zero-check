@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero-Width Tool - Giấu & Giải mã ký tự vô hình</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .sub {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 30px;
+            font-size: 0.85rem;
+        }
+        .card {
+            background: rgba(30, 30, 50, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(76, 110, 245, 0.5);
+        }
+        .card h2 {
+            color: #4c6ef5;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #3a3a5a;
+            background: #0f0f1a;
+            color: #fff;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 12px;
+            transition: 0.2s;
+        }
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #4c6ef5;
+            box-shadow: 0 0 8px rgba(76, 110, 245, 0.3);
+        }
+        button {
+            background: #4c6ef5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            margin-right: 8px;
+            margin-top: 5px;
+        }
+        button:hover {
+            background: #5f7bf6;
+            transform: translateY(-2px);
+        }
+        button.secondary {
+            background: #3a3a5a;
+        }
+        button.secondary:hover {
+            background: #4a4a6a;
+        }
+        .result-box {
+            background: #0a0a12;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 15px;
+            border-left: 4px solid #4c6ef5;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            max-height: 150px;
+            overflow: auto;
+        }
+        .result-box.success {
+            border-left-color: #28a745;
+        }
+        .result-box.error {
+            border-left-color: #dc3545;
+        }
+        .result-title {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        .copy-btn {
+            background: #28a745;
+            padding: 5px 12px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .copy-btn:hover {
+            background: #34ce57;
+        }
+        .info {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 12px;
+            color: #aaa;
+            text-align: center;
+        }
+        .info a {
+            color: #4c6ef5;
+            text-decoration: none;
+        }
+        .badge {
+            display: inline-block;
+            background: #2a2a4a;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            margin-left: 8px;
+        }
+        .flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        hr {
+            border-color: #2a2a4a;
+            margin: 15px 0;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 0; }
+            .card { padding: 18px; }
+            button { padding: 8px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🕵️‍♂️ Zero-Width Steganography</h1>
+    <div class="sub">Giấu thông điệp vào ký tự vô hình · Mắt thường không thấy được</div>
+
+    <!-- Card 1: Giấu tin -->
+    <div class="card">
+        <h2>🔒 1. Giấu tin (Encode)</h2>
+        <textarea id="secretMsg" rows="3" placeholder="📝 Nhập thông điệp cần giấu...&#10;Ví dụ: Mật khẩu là 123456"></textarea>
+        <textarea id="coverMsg" rows="3" placeholder="💬 Nhập văn bản nền (câu chat hiển thị)...&#10;Ví dụ: Chào bạn, hôm nay thế nào?"></textarea>
+        <div class="flex">
+            <button id="encodeBtn">✨ Giấu &amp; Copy</button>
+            <button id="clearEncodeBtn" class="secondary">🗑️ Xóa</button>
+        </div>
+        <div id="encodeResult" class="result-box" style="display: none;">
+            <div class="result-title">📤 Kết quả (đã copy vào clipboard):</div>
+            <div id="encodedText"></div>
+            <button id="copyEncodedBtn" class="copy-btn" style="display: none;">📋 Copy lại</button>
+        </div>
+    </div>
+
+    <!-- Card 2: Giải mã -->
+    <div class="card">
+        <h2>🔓 2. Giải mã (Decode)</h2>
+        <textarea id="decodedInput" rows="4" placeholder="📋 Dán đoạn chat đã giấu ký tự zero-width vào đây..."></textarea>
+        <div class="flex">
+            <button id="decodeBtn">🔍 Giải mã</button>
+            <button id="clearDecodeBtn" class="secondary">🗑️ Xóa</button>
+        </div>
+        <div id="decodeResult" class="result-box" style="display: none;">
+            <div class="result-title">🔓 Thông điệp đã giấu:</div>
+            <div id="decodedText"></div>
+            <button id="copyDecodedBtn" class="copy-btn" style="display: none;">📋 Copy thông điệp</button>
+        </div>
+    </div>
+
+    <!-- Card 3: Giải thích -->
+    <div class="info">
+        💡 <strong>Zero-Width là gì?</strong> Là các ký tự Unicode không chiếm chiều rộng (U+200B, U+200C).<br>
+        Mắt thường KHÔNG nhìn thấy, nhưng máy tính vẫn đọc được.<br>
+        👉 <strong>Bạn có thể giấu tin nhắn vào bất kỳ câu chat nào!</strong><br>
+        📌 Sau khi giấu, copy kết quả và gửi đi. Người nhận dán vào ô "Giải mã" để xem tin ẩn.
+    </div>
+</div>
+
+<script>
+    // Ký tự zero-width
+    const ZWSP = '\u200B';  // 1
+    const ZWNJ = '\u200C';  // 0
+
+    // Chuyển text -> binary 16bit
+    function textToBinary(text) {
+        let binary = '';
+        for (let i = 0; i < text.length; i++) {
+            let code = text.charCodeAt(i);
+            let bin = code.toString(2).padStart(16, '0');
+            binary += bin;
+        }
+        return binary;
+    }
+
+    // Chuyển binary -> text
+    function binaryToText(binary) {
+        let result = '';
+        for (let i = 0; i < binary.length; i += 16) {
+            let byte = binary.substr(i, 16);
+            if (byte.length === 16) {
+                result += String.fromCharCode(parseInt(byte, 2));
+            }
+        }
+        return result;
+    }
+
+    // Giấu tin (encode)
+    function encodeZero(secret, cover) {
+        if (!secret || !cover) return null;
+        let binary = textToBinary(secret);
+        let encodedMsg = binary.replace(/1/g, ZWSP).replace(/0/g, ZWNJ);
+        // Chèn vào sau ký tự đầu tiên của cover text
+        if (cover.length > 0) {
+            return cover[0] + encodedMsg + cover.slice(1);
+        }
+        return encodedMsg;
+    }
+
+    // Giải mã (decode)
+    function decodeZero(text) {
+        if (!text) return null;
+        let hidden = '';
+        for (let i = 0; i < text.length; i++) {
+            let ch = text[i];
+            if (ch === ZWSP || ch === ZWNJ) {
+                hidden += ch;
+            }
+        }
+        if (hidden.length === 0) return null;
+        
+        let binary = '';
+        for (let i = 0; i < hidden.length; i++) {
+            binary += (hidden[i] === ZWSP) ? '1' : '0';
+        }
+        // Cắt cho đủ 16 bit (bỏ phần dư cuối)
+        binary = binary.substr(0, Math.floor(binary.length / 16) * 16);
+        return binaryToText(binary);
+    }
+
+    // Escape HTML để hiển thị (không bị lỗi)
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\u200B\u200C]/g, function(match) {
+            return match === '\u200B' ? '<span style="background:#e94560; color:white; padding:0 2px; border-radius:3px;">​</span>' : '<span style="background:#4c6ef5; color:white; padding:0 2px; border-radius:3px;">‌</span>';
+        });
+    }
+
+    // Copy text vào clipboard
+    async function copyToClipboard(text, showMessage) {
+        try {
+            await navigator.clipboard.writeText(text);
+            if (showMessage) alert('✅ Đã copy vào clipboard!');
+            return true;
+        } catch (err) {
+            alert('❌ Copy thất bại: ' + err);
+            return false;
+        }
+    }
+
+    // ========== XỬ LÝ ENCODE ==========
+    document.getElementById('encodeBtn').addEventListener('click', async () => {
+        const secret = document.getElementById('secretMsg').value;
+        const cover = document.getElementById('coverMsg').value;
+        
+        if (!secret.trim()) {
+            alert('⚠️ Vui lòng nhập thông điệp cần giấu!');
+            return;
+        }
+        if (!cover.trim()) {
+            alert('⚠️ Vui lòng nhập văn bản nền!');
+            return;
+        }
+        
+        const encoded = encodeZero(secret, cover);
+        if (!encoded) {
+            alert('❌ Lỗi khi giấu tin!');
+            return;
+        }
+        
+        // Copy vào clipboard
+        await copyToClipboard(encoded, true);
+        
+        // Hiển thị kết quả
+        const resultDiv = document.getElementById('encodeResult');
+        const encodedSpan = document.getElementById('encodedText');
+        const copyBtn = document.getElementById('copyEncodedBtn');
+        
+        encodedSpan.innerHTML = escapeHtml(encoded);
+        resultDiv.style.display = 'block';
+        resultDiv.classList.remove('error');
+        resultDiv.classList.add('success');
+        copyBtn.style.display = 'inline-block';
+        
+        // Gắn sự kiện copy lại
+        copyBtn.onclick = () => copyToClipboard(encoded, true);
+    });
+    
+    document.getElementById('clearEncodeBtn').addEventListener('click', () => {
+        document.getElementById('secretMsg').value = '';
+        document.getElementById('coverMsg').value = '';
+        document.getElementById('encodeResult').style.display = 'none';
+        document.getElementById('encodedText').innerHTML = '';
+    });
+    
+    // ========== XỬ LÝ DECODE ==========
+    document.getElementById('decodeBtn').addEventListener('click', () => {
+        const input = document.getElementById('decodedInput').value;
+        if (!input.trim()) {
+            alert('⚠️ Vui lòng dán đoạn chat cần giải mã!');
+            return;
+        }
+        
+        const decoded = decodeZero(input);
+        const resultDiv = document.getElementById('decodeResult');
+        const decodedSpan = document.getElementById('decodedText');
+        const copyBtn = document.getElementById('copyDecodedBtn');
+        
+        if (decoded && decoded.length > 0) {
+            decodedSpan.textContent = decoded;
+            resultDiv.style.display = 'block';
+            resultDiv.classList.remove('error');
+            resultDiv.classList.add('success');
+            copyBtn.style.display = 'inline-block';
+            copyBtn.onclick = () => copyToClipboard(decoded, true);
+        } else {
+            decodedSpan.textContent = '❌ Không tìm thấy thông điệp nào! Đoạn chat này không chứa ký tự zero-width.';
+            resultDiv.style.display = 'block';
+            resultDiv.classList.remove('success');
+            resultDiv.classList.add('error');
+            copyBtn.style.display = 'none';
+        }
+    });
+    
+    document.getElementById('clearDecodeBtn').addEventListener('click', () => {
+        document.getElementById('decodedInput').value = '';
+        document.getElementById('decodeResult').style.display = 'none';
+        document.getElementById('decodedText').innerHTML = '';
+    });
+    
+    // Ví dụ mẫu (gợi ý)
+    console.log('Zero-Width Tool ready!');
+</script>
+</body>
+</html>
